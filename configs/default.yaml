@@ -1,0 +1,29 @@
+experiment_name: "fdia_selective_verification"
+
+# Simulation / Environment
+simulation:
+  grid_case: "rte_case14_realistic"
+  attack_strength: 0.1
+  attack_fraction: 0.3
+  noise_level: 0.01
+
+# RL / Cost parameters
+rl:
+  lambda_c: 0.5
+  episode_cap: 2
+  learning_rate: 0.0003
+
+# Model hyperparameters
+tier1:
+  isolation_forest:
+    contamination: 0.3
+  vae:
+    hidden_dim: 16
+    latent_dim: 4
+  mlp:
+    hidden_dim: 32
+
+tier2:
+  hgat:
+    hidden_dim: 64
+    heads: 4

@@ -1,0 +1,40 @@
+========== Phase 1: Loading Grid Data ==========
+
+========== Phase 2: Training Tier-1 Models ==========
+Training IF...
+Training PCA-AE...
+Training MLP...
+
+========== Phase 3: State Indicators ==========
+
+========== Phase 4: Training A2C Agent ==========
+Training with lambda_c (Verification Penalty) = 0.5
+
+========== Phase 5: Training Tier-2 HGAT ==========
+
+========== Phase 6: End-to-End Simulation Eval ==========
+End-to-End System Accuracy : 70.50%
+End-to-End System F1-Score : 0.0000
+Selective Verification Rate: 0.0%
+- Processed 200 samples.
+- Escapades to Tier-2 HGAT: 0 counts.
+========== Phase 1: Loading Grid Data ==========
+
+========== Phase 2: Training Tier-1 Models ==========
+Training IF...
+Training PCA-AE...
+Training MLP...
+
+========== Phase 3: State Indicators ==========
+
+========== Phase 4: Training A2C Agent ==========
+Training with lambda_c (Verification Penalty) = 0.05
+
+========== Phase 5: Training Tier-2 HGAT ==========
+
+========== Phase 6: End-to-End Simulation Eval ==========
+End-to-End System Accuracy : 70.50%
+End-to-End System F1-Score : 0.0000
+Selective Verification Rate: 0.0%
+- Processed 200 samples.
+- Escapades to Tier-2 HGAT: 0 counts.
