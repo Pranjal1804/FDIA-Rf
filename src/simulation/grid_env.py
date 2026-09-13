@@ -19,8 +19,12 @@ class GridSimulation:
         self.base_loads = np.random.uniform(10, 50, self.n_bus)
         self.base_loads[0] = -np.sum(self.base_loads[1:]) 
 
-    def step(self):
-        loads = self.base_loads * np.random.normal(1.0, 0.05, self.n_bus)
+    def step(self, time_idx=0):
+        # Diurnal load curve: peak at evening (approx), 24h periodicity modeled over 100 steps
+        time_of_day = (time_idx % 100) / 100.0
+        diurnal_factor = 1.0 + 0.4 * np.sin(2 * np.pi * (time_of_day - 0.25))
+        
+        loads = self.base_loads * diurnal_factor * np.random.normal(1.0, 0.05, self.n_bus)
         loads[0] = -np.sum(loads[1:]) 
         
         sus = 1.0 / self.reactances

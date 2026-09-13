@@ -101,8 +101,12 @@ print(">>> Loading data")
 with open("data/simulated/case14_data.json") as f: data=json.load(f)
 X_raw=np.array([d["z"] for d in data],np.float64)
 y=np.array([d["label"] for d in data],int)
+attack_buses=[d.get("attacked_buses", []) for d in data]
+
 idx=np.random.RandomState(0).permutation(len(X_raw))
 tr,te=idx[:800],idx[800:]
+att_te = [attack_buses[i] for i in te]
+
 mu,sd=X_raw[tr].mean(0),X_raw[tr].std(0)+1e-8
 X=(X_raw-mu)/sd; Xtr,Xte=X[tr],X[te]; ytr,yte=y[tr],y[te]; Xnorm=Xtr[ytr==0]
 print(f"    Train={len(Xtr)} ({ytr.sum()} atk)  Test={len(Xte)} ({yte.sum()} atk)")
@@ -202,3 +206,27 @@ with open("data/results/phase6_results.json","w") as f:
     json.dump({"tier1":{"acc":t1_acc,"f1":t1_f1},
                "tier2":{"acc":t2_acc,"f1":t2_f1},"a2c":results},f,indent=2)
 print("Saved → data/results/phase6_results.json")
+
+# ─── Dashboard Export ────────────────────────────────────────────────────────
+print(">>> Exporting Real Inferences to Dashboard")
+import re
+dash_samples = []
+for i in range(min(50, len(te))):
+    dash_samples.append({
+        "id": i,
+        "label": int(yte[i]),
+        "p_if": float(p_if_te[i]),
+        "p_vae": float(p_vae_te[i]),
+        "p_mlp": float(p_mlp_te[i]),
+        "gcs": float(gcs_te[i]),
+        "chi2": float(chi2_te[i]),
+        "attacked_buses": att_te[i]
+    })
+    
+try:
+    with open("dashboard/index.html", "r") as f: html = f.read()
+    html = re.sub(r'const SAMPLES=/\*INJECT_SAMPLES_HERE\*/\[\];', f'const SAMPLES={json.dumps(dash_samples)};', html)
+    with open("dashboard/index.html", "w") as f: f.write(html)
+    print("Updated dashboard/index.html with real samples!")
+except Exception as e:
+    print(f"Could not update dashboard: {e}")

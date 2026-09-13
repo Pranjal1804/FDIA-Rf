@@ -25,7 +25,7 @@ def roc_auc_score_np(y_true, y_score):
     for v in yt:
         tp += int(v); fp += 1 - int(v)
         tprs.append(tp / npos); fprs.append(fp / nneg)
-    return float(np.trapz(tprs, fprs))
+    return float(np.trapezoid(tprs, fprs) if hasattr(np, 'trapezoid') else np.trapz(tprs, fprs))
 
 def acc(y_true, p, t=0.5):
     return float(np.mean((p > t).astype(int) == y_true))
