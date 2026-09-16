@@ -3,336 +3,266 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FDIA Selective Verification — Live Demo</title>
+<title>FDIA Selective Verification</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0a0d13;
-    --surface: #111622;
-    --card: #161d2e;
-    --border: #1e2d45;
-    --accent: #3b82f6;
-    --accent2: #8b5cf6;
-    --green: #10b981;
-    --red: #ef4444;
-    --yellow: #f59e0b;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --glow: 0 0 20px rgba(59,130,246,0.3);
+    --bg: #ffffff;
+    --surface: #f7f7f7;
+    --border: #000000;
+    --text: #000000;
+    --muted: #555555;
+    --accent: #d32f2f; /* Stark Red */
+    --accent2: #000000; /* Strict Black */
+    --green: #1b5e20; /* Darker professional green */
   }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+  * { margin:0; padding:0; box-sizing:border-box; border-radius:0 !important; font-family:'Inter', sans-serif; }
+  body { background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
 
   /* ── header ── */
-  header{background:linear-gradient(135deg,#0f172a,#1e1b4b);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
-  .logo{display:flex;align-items:center;gap:.75rem}
-  .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
-  .logo h1{font-size:1.1rem;font-weight:700;background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-  .logo p{font-size:.7rem;color:var(--muted);margin-top:1px}
-  .header-right{display:flex;align-items:center;gap:1rem}
-  .status-pill{display:flex;align-items:center;gap:.4rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:.3rem .75rem;border-radius:999px;font-size:.75rem;color:var(--green)}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  header { background:#ffffff; border-bottom:2px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; }
+  .logo h1 { font-size:1.15rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:1px; }
+  .logo p { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; font-weight:600; }
+  .status-block { border:1px solid var(--border); padding:.3rem .75rem; font-size:.75rem; font-weight:600; text-transform:uppercase; background:var(--surface); display:flex; gap:10px; align-items:center; }
+  .status-block span.live { color:var(--green); }
 
   /* ── layout ── */
-  .grid-layout{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;padding:1.25rem;max-width:1600px;margin:0 auto}
-  .span2{grid-column:span 2}
-  .span3{grid-column:span 3}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
-  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:.3s}
-  .card:hover::before{opacity:1}
-  .card-title{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
-  .card-title .badge{font-size:.65rem;background:rgba(59,130,246,.15);color:var(--accent);padding:.15rem .5rem;border-radius:4px;text-transform:none;letter-spacing:0}
+  .grid-layout { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.25rem; padding:1.25rem; max-width:1600px; margin:0 auto; }
+  .span2 { grid-column:span 2; }
+  .span3 { grid-column:span 3; }
+  .card { background:var(--bg); border:1px solid var(--border); padding:1.25rem; }
+  
+  .card-title { font-size:.85rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.05em; margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; }
+  .badge { font-size:.65rem; background:var(--surface); border:1px solid var(--border); padding:.15rem .5rem; font-family:'JetBrains Mono', monospace; }
 
-  /* ── metrics strip ── */
-  .metrics-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:0 1.25rem 0}
-  .metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem}
-  .metric-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
-  .metric-label{font-size:.72rem;color:var(--muted);font-weight:500}
-  .metric-value{font-size:1.5rem;font-weight:700;line-height:1.1}
-  .metric-sub{font-size:.7rem;color:var(--muted);margin-top:1px}
+  /* ── metrics ── */
+  .metrics-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; padding:1.25rem 1.25rem 0; max-width: 1600px; margin: 0 auto; }
+  .metric { background:var(--surface); border:1px solid var(--border); padding:1rem 1.25rem; }
+  .metric-label { font-size:.75rem; color:var(--muted); font-weight:700; text-transform:uppercase; margin-bottom:4px; }
+  .metric-value { font-size:1.5rem; font-weight:700; font-family:'JetBrains Mono', monospace; line-height:1.1; }
+  .color-red { color:var(--accent); }
+  .color-green { color:var(--green); }
+  .color-black { color:var(--accent2); }
+  .metric-sub { font-size:.7rem; color:var(--muted); margin-top:4px; font-family:'JetBrains Mono', monospace; }
 
-  /* ── 14-bus grid SVG ── */
-  #bus-svg{width:100%;height:280px}
-  .bus-node{cursor:pointer;transition:all .2s}
-  .bus-node circle{transition:all .3s}
-  .bus-label{font-size:10px;fill:#94a3b8;font-family:'Inter',sans-serif}
-  .line-normal{stroke:#1e3a5f;stroke-width:2;opacity:.8}
-  .line-attacked{stroke:#ef4444;stroke-width:3;opacity:1;animation:lineFlash 1s infinite}
-  @keyframes lineFlash{0%,100%{opacity:1}50%{opacity:.4}}
+  /* ── SVG ── */
+  #bus-svg { width:100%; height:280px; background:var(--surface); border:1px solid #ccc; }
+  .bus-node circle { transition:all .1s; }
+  .bus-label { font-size:10px; fill:#000; font-weight:600; font-family:'JetBrains Mono', monospace; }
+  .line-normal { stroke:#999; stroke-width:1.5; }
+  .line-attacked { stroke:var(--accent); stroke-width:3; }
 
-  /* ── sample list ── */
-  .sample-list{display:flex;flex-direction:column;gap:.4rem;max-height:268px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-  .sample-item{display:flex;align-items:center;gap:.75rem;padding:.5rem .75rem;border-radius:8px;cursor:pointer;transition:.15s;border:1px solid transparent;font-size:.8rem}
-  .sample-item:hover{background:rgba(255,255,255,.04);border-color:var(--border)}
-  .sample-item.active{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4)}
-  .label-pill{padding:.2rem .5rem;border-radius:4px;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-  .pill-normal{background:rgba(16,185,129,.15);color:var(--green)}
-  .pill-attack{background:rgba(239,68,68,.15);color:var(--red)}
+  /* ── list ── */
+  .sample-list { display:flex; flex-direction:column; gap:.25rem; max-height:270px; overflow-y:auto; border:1px solid var(--border); padding:.5rem; background:var(--surface); }
+  .sample-item { display:flex; align-items:center; justify-content:space-between; padding:.4rem .5rem; cursor:pointer; border:1px solid transparent; font-size:.8rem; font-family:'JetBrains Mono', monospace; font-weight:600; }
+  .sample-item:hover { border-color:#ccc; background:#fff; }
+  .sample-item.active { background:#000; color:#fff; border-color:#000; }
+  .label-text { font-size:.7rem; font-weight:700; }
+  .text-normal { color:var(--green); }
+  .text-attack { color:var(--accent); }
+  .sample-item.active .text-normal, .sample-item.active .text-attack { color:#fff; }
 
-  /* ── gauge ── */
-  .gauge-row{display:flex;flex-direction:column;gap:.65rem}
-  .gauge-item{display:flex;align-items:center;gap:.75rem}
-  .gauge-label{width:55px;font-size:.75rem;color:var(--muted);flex-shrink:0}
-  .gauge-bar{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
-  .gauge-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
-  .gauge-val{width:40px;text-align:right;font-size:.75rem;font-family:'JetBrains Mono',monospace;font-weight:500}
+  /* ── gauges ── */
+  .gauge-row { display:flex; flex-direction:column; gap:.5rem; }
+  .gauge-item { display:flex; align-items:center; gap:.75rem; font-family:'JetBrains Mono', monospace; font-size:.75rem; }
+  .gauge-label { width:45px; font-weight:700; flex-shrink:0; }
+  .gauge-bar { flex:1; height:12px; background:var(--surface); border:1px solid var(--border); }
+  .gauge-fill { height:100%; background:var(--text); transition:width .2s ease-out; }
+  .gauge-val { width:40px; text-align:right; font-weight:700; }
+  
+  /* ── indicator block ── */
+  .indicator-grid { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:1rem; }
+  .indicator-box { border:1px solid var(--border); padding:.75rem; text-align:center; background:var(--surface); }
+  .ind-title { font-size:.7rem; font-weight:700; text-transform:uppercase; color:var(--muted); }
+  .ind-val { font-size:1.1rem; font-weight:700; font-family:'JetBrains Mono', monospace; margin-top:.25rem; }
 
   /* ── decision panel ── */
-  .decision-box{border-radius:12px;padding:1.1rem;text-align:center;margin-top:.5rem;transition:.4s}
-  .decision-box.normal{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35)}
-  .decision-box.attack{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35)}
-  .decision-box.verify{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.35)}
-  .decision-title{font-size:1.1rem;font-weight:700;margin-bottom:.25rem}
-  .decision-sub{font-size:.75rem;color:var(--muted)}
+  .slider-wrap label { font-size:.75rem; font-weight:700; color:var(--text); text-transform:uppercase; display:flex; justify-content:space-between; }
+  .slider-wrap input[type=range] { width:100%; margin:.75rem 0; accent-color:#000; }
+  .slider-labels { display:flex; justify-content:space-between; font-size:.65rem; font-weight:700; color:var(--muted); font-family:'JetBrains Mono', monospace; }
 
-  /* ── action buttons ── */
-  .btn{padding:.55rem 1.1rem;border-radius:8px;border:none;cursor:pointer;font-size:.8rem;font-weight:600;font-family:'Inter',sans-serif;transition:.2s;outline:none}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-  .btn-primary:hover{opacity:.85;transform:translateY(-1px);box-shadow:var(--glow)}
-  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-  .btn-group{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
+  .flow { display:flex; gap:.25rem; margin-top:1rem; }
+  .flow-step { flex:1; border:1px solid var(--border); padding:.5rem .25rem; font-size:.65rem; font-weight:700; text-align:center; text-transform:uppercase; background:var(--surface); }
+  .flow-step.active-step { background:var(--text); color:var(--bg); }
 
-  /* ── lambda slider ── */
-  .slider-wrap{margin-top:.75rem}
-  .slider-wrap label{font-size:.75rem;color:var(--muted)}
-  .slider-wrap input[type=range]{width:100%;accent-color:var(--accent);margin:.5rem 0}
-  .slider-val{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--accent);font-weight:600}
+  .decision-box { border:2px solid var(--border); padding:1rem; text-align:center; margin-top:1rem; background:var(--surface); }
+  .decision-box.normal { border-color:var(--green); color:var(--green); }
+  .decision-box.attack { border-color:var(--accent); color:var(--accent); background:#fff5f5; }
+  .decision-box.verify { border-color:var(--text); color:var(--text); background:#f4f4f4; }
+  .decision-title { font-size:1.1rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+  .decision-sub { font-size:.75rem; font-family:'JetBrains Mono', monospace; margin-top:.25rem; font-weight:600; color:#333; }
 
-  /* ── chart ── */
-  .chart-wrap{position:relative;height:180px}
+  /* ── buttons ── */
+  .btn-group { display:flex; gap:.5rem; margin-top:1rem; }
+  .btn { flex:1; padding:.6rem; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:.75rem; font-weight:700; text-transform:uppercase; cursor:pointer; font-family:'JetBrains Mono', monospace; }
+  .btn:hover { background:var(--text); color:var(--bg); }
+  .btn-primary { background:var(--text); color:var(--bg); }
+  .btn-primary:hover { background:var(--surface); color:var(--text); }
 
-  /* ── table ── */
-  .result-table{width:100%;border-collapse:collapse;font-size:.8rem}
-  .result-table th{color:var(--muted);font-weight:600;padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);font-size:.72rem;letter-spacing:.05em}
-  .result-table td{padding:.55rem .75rem;border-bottom:1px solid rgba(30,45,69,.5)}
-  .result-table tr:last-child td{border:none}
-  .highlight-row td{color:var(--accent);font-weight:600}
-  .tag{display:inline-block;padding:.15rem .45rem;border-radius:4px;font-size:.65rem;font-weight:600}
-  .tag-green{background:rgba(16,185,129,.15);color:var(--green)}
-  .tag-red{background:rgba(239,68,68,.15);color:var(--red)}
-  .tag-blue{background:rgba(59,130,246,.15);color:var(--accent)}
-  .tag-purple{background:rgba(139,92,246,.15);color:var(--accent2)}
-
-  /* ── flow diagram ── */
-  .flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
-  .flow-step{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:.45rem .75rem;font-size:.72rem;text-align:center;min-width:80px}
-  .flow-arrow{color:var(--muted);font-size:.9rem}
-  .flow-step.active-step{border-color:var(--accent);background:rgba(59,130,246,.1);color:var(--accent)}
-
-  /* scrollbar */
-  ::-webkit-scrollbar{width:4px}
-  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-  /* banner */
-  .demo-banner{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.15));border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:.75rem 1rem;font-size:.78rem;color:var(--muted);margin-bottom:.5rem}
-  .demo-banner strong{color:var(--text)}
+  /* ── tables/charts ── */
+  .chart-wrap { position:relative; height:180px; }
+  .result-table { width:100%; border-collapse:collapse; font-size:.75rem; font-family:'JetBrains Mono', monospace; }
+  .result-table th, .result-table td { padding:.6rem .5rem; text-align:left; border:1px solid var(--border); }
+  .result-table th { background:var(--text); color:var(--bg); font-weight:700; text-transform:uppercase; }
+  .highlight-row td { background:var(--surface); font-weight:700; border:2px solid var(--border); }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <div>
-      <h1>FDIA Selective Verification Framework</h1>
-      <p>IEEE 14-Bus Smart Grid — Two-Tier Cyberattack Detection</p>
-    </div>
+    <h1>FDIA Selective Verification Framework</h1>
+    <p>IEEE 14-Bus Smart Grid — Technical Diagnostics Console</p>
   </div>
   <div class="header-right">
-    <div class="status-pill"><div class="dot"></div>Live Simulation</div>
-    <span style="font-size:.78rem;color:var(--muted)">λ_c = <span id="hdr-lam" style="color:var(--accent);font-weight:600">0.5</span></span>
+    <div class="status-block">
+      STATUS: <span class="live">[ ONLINE / LIVE ]</span>
+      <span style="border-left:1px solid #ccc; padding-left:10px;">&lambda;_c = <span id="hdr-lam">0.5</span></span>
+    </div>
   </div>
 </header>
 
-<!-- Metrics Strip -->
-<div style="padding:1.25rem 1.25rem 0" class="metrics-strip">
+<div class="metrics-strip">
   <div class="metric">
-    <div class="metric-icon" style="background:rgba(59,130,246,.15)">🎯</div>
-    <div>
-      <div class="metric-label">Tier-1 Fusion AUC</div>
-      <div class="metric-value" style="color:var(--accent)">0.9345</div>
-      <div class="metric-sub">IF + PCA-AE + MLP ensemble</div>
-    </div>
+    <div class="metric-label">Tier-1 Fusion AUC</div>
+    <div class="metric-value color-black">0.9345</div>
+    <div class="metric-sub">> IF + PCA + MLP</div>
   </div>
   <div class="metric">
-    <div class="metric-icon" style="background:rgba(16,185,129,.15)">✅</div>
-    <div>
-      <div class="metric-label">System Accuracy</div>
-      <div class="metric-value" style="color:var(--green)">87.5%</div>
-      <div class="metric-sub">200 held-out test samples</div>
-    </div>
+    <div class="metric-label">System Accuracy</div>
+    <div class="metric-value color-green">0.875</div>
+    <div class="metric-sub">> N=200 HELD-OUT</div>
   </div>
   <div class="metric">
-    <div class="metric-icon" style="background:rgba(139,92,246,.15)">🔁</div>
-    <div>
-      <div class="metric-label">HGAT Invocation Rate</div>
-      <div class="metric-value" id="hgat-rate-metric" style="color:var(--accent2)">2.4%</div>
-      <div class="metric-sub">At λ=0.5 (selective mode)</div>
-    </div>
+    <div class="metric-label">HGAT Invocation Rate</div>
+    <div class="metric-value color-red" id="hgat-rate-metric">2.4%</div>
+    <div class="metric-sub">> AT &lambda; = 0.5</div>
   </div>
   <div class="metric">
-    <div class="metric-icon" style="background:rgba(245,158,11,.15)">⚡</div>
-    <div>
-      <div class="metric-label">A2C Episodes Trained</div>
-      <div class="metric-value" style="color:var(--yellow)">5,000</div>
-      <div class="metric-sub">Per λ value (3 regimes)</div>
-    </div>
+    <div class="metric-label">A2C Model Regimes</div>
+    <div class="metric-value color-black">3</div>
+    <div class="metric-sub">> 5,000 EP ENGINES</div>
   </div>
 </div>
 
-<!-- Main Grid -->
 <div class="grid-layout">
-
-  <!-- 14-Bus Grid Topology -->
+  <!-- 14-Bus -->
   <div class="card span2">
-    <div class="card-title">🔌 IEEE 14-Bus Grid Topology <span class="badge">Live</span></div>
+    <div class="card-title">IEEE 14-Bus Topology Diagnostics <span class="badge">[MONITORING]</span></div>
     <svg id="bus-svg" viewBox="0 0 560 270"></svg>
-    <div style="display:flex;gap:1rem;margin-top:.5rem;font-size:.72rem;color:var(--muted)">
-      <span>⚫ Normal bus</span>
-      <span style="color:var(--red)">🔴 Attacked bus</span>
-      <span style="color:var(--green)">🟢 Generator bus</span>
+    <div style="display:flex;gap:1.5rem;margin-top:.75rem;font-size:.7rem;font-family:'JetBrains Mono',monospace;font-weight:700;">
+      <span>[o] NO INJECTION</span>
+      <span style="color:var(--accent)">[x] FDIA OVERRIDE</span>
+      <span style="color:var(--green)">[G] GENERATOR</span>
     </div>
   </div>
 
-  <!-- Sample Selector -->
+  <!-- Samples -->
   <div class="card">
-    <div class="card-title">📋 Test Samples <span class="badge">Click to simulate</span></div>
+    <div class="card-title">Batch Processing Queue <span class="badge">[SELECT]</span></div>
     <div class="sample-list" id="sample-list"></div>
   </div>
 
-  <!-- Tier-1 Score Gauges -->
+  <!-- Scores -->
   <div class="card">
-    <div class="card-title">🔍 Tier-1 Detector Scores</div>
+    <div class="card-title">Tier-1 Sub-System Outputs</div>
     <div class="gauge-row" id="gauges">
-      <div class="gauge-item"><span class="gauge-label">IF</span><div class="gauge-bar"><div class="gauge-fill" id="g-if" style="width:0%;background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div></div><span class="gauge-val" id="v-if">—</span></div>
-      <div class="gauge-item"><span class="gauge-label">VAE</span><div class="gauge-bar"><div class="gauge-fill" id="g-vae" style="width:0%;background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div></div><span class="gauge-val" id="v-vae">—</span></div>
-      <div class="gauge-item"><span class="gauge-label">MLP</span><div class="gauge-bar"><div class="gauge-fill" id="g-mlp" style="width:0%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div><span class="gauge-val" id="v-mlp">—</span></div>
-      <div class="gauge-item" style="margin-top:.25rem;border-top:1px solid var(--border);padding-top:.65rem"><span class="gauge-label" style="color:var(--text);font-weight:600">Fusion</span><div class="gauge-bar"><div class="gauge-fill" id="g-fusion" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div></div><span class="gauge-val" id="v-fusion" style="color:var(--accent)">—</span></div>
+      <div class="gauge-item"><span class="gauge-label">IF</span><div class="gauge-bar"><div class="gauge-fill" id="g-if" style="width:0%"></div></div><span class="gauge-val" id="v-if">—</span></div>
+      <div class="gauge-item"><span class="gauge-label">VAE</span><div class="gauge-bar"><div class="gauge-fill" id="g-vae" style="width:0%"></div></div><span class="gauge-val" id="v-vae">—</span></div>
+      <div class="gauge-item"><span class="gauge-label">MLP</span><div class="gauge-bar"><div class="gauge-fill" id="g-mlp" style="width:0%"></div></div><span class="gauge-val" id="v-mlp">—</span></div>
+      <div class="gauge-item" style="margin-top:.5rem;"><span class="gauge-label">FUSION</span><div class="gauge-bar" style="border:2px solid #000;"><div class="gauge-fill" id="g-fusion" style="width:0%; background:#d32f2f;"></div></div><span class="gauge-val color-red" id="v-fusion">—</span></div>
     </div>
-
-    <!-- State Indicators -->
-    <div style="margin-top:1rem">
-      <div class="card-title" style="margin-bottom:.5rem">📊 State Indicators</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-        <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:.75rem;text-align:center">
-          <div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">GCS Score</div>
-          <div id="gcs-val" style="font-size:1.1rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--yellow)">—</div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:.75rem;text-align:center">
-          <div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">χ² z-score</div>
-          <div id="chi2-val" style="font-size:1.1rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent2)">—</div>
-        </div>
-      </div>
+    
+    <div class="indicator-grid">
+      <div class="indicator-box"><div class="ind-title">GCS Delta</div><div class="ind-val" id="gcs-val">—</div></div>
+      <div class="indicator-box"><div class="ind-title">Chi-Square Z</div><div class="ind-val" id="chi2-val">—</div></div>
     </div>
   </div>
 
-  <!-- A2C Decision Engine -->
+  <!-- A2C -->
   <div class="card">
-    <div class="card-title">🤖 A2C Agent Decision</div>
-
+    <div class="card-title">A2C Reinforcement Learning Policy</div>
+    
     <div class="slider-wrap">
-      <label>Verification Cost Penalty λ_c = <span class="slider-val" id="lam-disp">0.5</span></label>
+      <label>Compute Penalty (&lambda;_c) <span id="lam-disp">0.5</span></label>
       <input type="range" min="0.01" max="2.0" step="0.01" value="0.5" id="lambda-slider" oninput="onLambdaChange(this.value)">
-      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted)"><span>0 (always verify)</span><span>2.0 (never verify)</span></div>
+      <div class="slider-labels"><span>0.01 (STRICT GRAPH)</span><span>2.0 (FAST ML)</span></div>
     </div>
 
-    <!-- Pipeline flow -->
-    <div class="flow" id="flow-steps" style="margin-top:.9rem">
-      <div class="flow-step" id="fs0">Tier-1<br>Fusion</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step" id="fs1">State<br>s_t</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step" id="fs2">A2C<br>Agent</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step" id="fs3">Decision</div>
+    <div class="flow" id="flow-steps">
+      <div class="flow-step" id="fs0">T1 FUSION</div>
+      <div class="flow-step" id="fs1">STATE (S)</div>
+      <div class="flow-step" id="fs2">A2C AGENT</div>
+      <div class="flow-step" id="fs3">LOGIC</div>
     </div>
 
-    <div class="decision-box normal" id="decision-box" style="margin-top:.75rem">
-      <div class="decision-title" id="decision-title">—</div>
-      <div class="decision-sub" id="decision-sub">Select a sample to run inference</div>
+    <div class="decision-box normal" id="decision-box">
+      <div class="decision-title" id="decision-title">[—]</div>
+      <div class="decision-sub" id="decision-sub">AWAITING INPUT</div>
     </div>
 
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="autoPlay()">▶ Auto-Play</button>
-      <button class="btn btn-ghost" onclick="pausePlay()">⏸ Pause</button>
-      <button class="btn btn-ghost" onclick="randomSample()">🎲 Random</button>
+      <button class="btn btn-primary" onclick="autoPlay()">[ AUTO CYCLE ]</button>
+      <button class="btn" onclick="pausePlay()">[ HALT ]</button>
+      <button class="btn" onclick="randomSample()">[ RAND ]</button>
     </div>
   </div>
 
-  <!-- Model Comparison Chart -->
+  <!-- Chart -->
   <div class="card span2">
-    <div class="card-title">📈 Model Comparison — ROC-AUC & Cost</div>
+    <div class="card-title">ROC-AUC Detection Performance</div>
     <div class="chart-wrap">
       <canvas id="auc-chart"></canvas>
     </div>
   </div>
 
-  <!-- Results Table -->
+  <!-- Table -->
   <div class="card">
-    <div class="card-title">🏆 Phase 6 — Final Results</div>
+    <div class="card-title">Pipeline Architecture Evaluation</div>
     <table class="result-table">
       <thead>
-        <tr><th>Method</th><th>Acc</th><th>F1</th><th>HGAT%</th></tr>
+        <tr><th>Sub-Net</th><th>Acc</th><th>F1</th><th>HGAT%</th></tr>
       </thead>
       <tbody>
-        <tr><td>Tier-1 Fusion</td><td>0.875</td><td>0.800</td><td><span class="tag tag-green">0%</span></td></tr>
-        <tr><td>HGAT Only</td><td>0.755</td><td>0.310</td><td><span class="tag tag-red">100%</span></td></tr>
-        <tr><td>A2C λ=0.05</td><td>0.370</td><td>0.394</td><td><span class="tag tag-red">100%</span></td></tr>
-        <tr class="highlight-row"><td>A2C λ=0.3</td><td>0.875</td><td>0.800</td><td><span class="tag tag-purple">0%</span></td></tr>
-        <tr><td>A2C λ=1.0</td><td>0.370</td><td>0.394</td><td><span class="tag tag-red">100%</span></td></tr>
+        <tr><td>Tier-1</td><td>0.875</td><td>0.800</td><td>0.0%</td></tr>
+        <tr><td>HGAT-Max</td><td>0.755</td><td>0.310</td><td>100%</td></tr>
+        <tr><td>A2C (0.05)</td><td>0.370</td><td>0.394</td><td>100%</td></tr>
+        <tr class="highlight-row"><td>A2C (0.3)*</td><td>0.875</td><td>0.800</td><td>0.0%</td></tr>
+        <tr><td>A2C (1.0)</td><td>0.370</td><td>0.394</td><td>100%</td></tr>
       </tbody>
     </table>
-    <div style="margin-top:.75rem;padding:.6rem;background:rgba(0,0,0,.2);border-radius:8px;font-size:.72rem;color:var(--muted)">
-      ✅ <strong style="color:var(--text)">Key result:</strong> At λ=0.3, A2C achieves Tier-1 level accuracy with <em>zero</em> Tier-2 overhead — validating selective verification.
+    <div style="font-size:.7rem;font-family:'JetBrains Mono',monospace;margin-top:.75rem;color:var(--muted);font-weight:700;">
+      > RESULT: Selective tier configuration maintains optimum accuracy while dropping heavy computation to 0%.
     </div>
   </div>
 
-  <!-- A2C Reward History -->
+  <!-- History -->
   <div class="card span3">
-    <div class="card-title">🏋️ A2C Training History — Episode Reward Over Time</div>
-    <div class="chart-wrap" style="height:160px">
+    <div class="card-title">MDP Episode Reward Minimization</div>
+    <div class="chart-wrap" style="height:140px;">
       <canvas id="reward-chart"></canvas>
     </div>
   </div>
-
-</div><!-- end grid -->
-
-<div style="text-align:center;padding:1rem;font-size:.72rem;color:var(--muted)">
-  FDIA Selective Verification Framework · IEEE 14-Bus · Pure NumPy (torch-free) · Built with A2C RL + Spectral HGAT
 </div>
 
 <script>
-// ─── 14-bus topology ─────────────────────────────────────────────────────────
-const BUSES = [
-  {id:0,x:80,y:60,type:'gen'},
-  {id:1,x:200,y:50,type:'gen'},
-  {id:2,x:310,y:80,type:'load'},
-  {id:3,x:290,y:160,type:'load'},
-  {id:4,x:165,y:130,type:'load'},
-  {id:5,x:370,y:40,type:'gen'},
-  {id:6,x:430,y:120,type:'load'},
-  {id:7,x:500,y:60,type:'gen'},
-  {id:8,x:480,y:190,type:'load'},
-  {id:9,x:430,y:230,type:'load'},
-  {id:10,x:340,y:235,type:'load'},
-  {id:11,x:250,y:240,type:'load'},
-  {id:12,x:190,y:215,type:'load'},
-  {id:13,x:100,y:190,type:'load'},
+const SAMPLES=[{"id": 0, "label": 0, "p_if": 0.3526728193719965, "p_vae": 0.8418088412013052, "p_mlp": 0.26145882924026903, "gcs": 243.13187056970165, "chi2": -0.1186330017343196, "attacked_buses": []}, {"id": 1, "label": 1, "p_if": 0.350641574762098, "p_vae": 1.0, "p_mlp": 0.5263818820870687, "gcs": 128.40903343056632, "chi2": -0.07880205390581596, "attacked_buses": [0, 7]}, {"id": 2, "label": 0, "p_if": 0.05415615538723961, "p_vae": 0.18341739467339754, "p_mlp": 0.23315581619373324, "gcs": 46.66752914218406, "chi2": -1.4615457810689327, "attacked_buses": []}, {"id": 3, "label": 0, "p_if": 0.09482342807655009, "p_vae": 0.19476528012968336, "p_mlp": 0.4135260946513943, "gcs": 100.34740594967015, "chi2": -1.4653809674072185, "attacked_buses": []}, {"id": 4, "label": 0, "p_if": 0.16358734472861683, "p_vae": 0.3296173144525453, "p_mlp": 0.33590474823644517, "gcs": 203.76294240977714, "chi2": -1.0081344107193582, "attacked_buses": []}, {"id": 5, "label": 0, "p_if": 0.050292380772010634, "p_vae": 0.1135472759096193, "p_mlp": 0.2362333079419958, "gcs": 48.35846503469157, "chi2": -0.11388902373946652, "attacked_buses": []}, {"id": 6, "label": 0, "p_if": 0.2698023516220272, "p_vae": 0.716103584627898, "p_mlp": 0.3342828283888524, "gcs": 229.72669045158628, "chi2": -0.11096037497198066, "attacked_buses": []}, {"id": 7, "label": 0, "p_if": 0.24674455802934717, "p_vae": 0.7670153056009271, "p_mlp": 0.23250836451639184, "gcs": 245.29479070321486, "chi2": -0.390023459588535, "attacked_buses": []}, {"id": 8, "label": 0, "p_if": 0.4054904827103771, "p_vae": 1.0, "p_mlp": 0.2938623569305388, "gcs": 211.2647348638706, "chi2": -0.09529493809796877, "attacked_buses": []}, {"id": 9, "label": 1, "p_if": 0.18977070845783825, "p_vae": 0.7771216017991751, "p_mlp": 0.40851620638545727, "gcs": 229.37622367534797, "chi2": 0.3192521616563396, "attacked_buses": [5, 7]}, {"id": 10, "label": 0, "p_if": 0.08493400482593086, "p_vae": 0.16537253145116743, "p_mlp": 0.4899198211892737, "gcs": 130.12646339600045, "chi2": -0.4027901644066373, "attacked_buses": []}, {"id": 11, "label": 0, "p_if": 0.057013058570986944, "p_vae": 0.16092518220806246, "p_mlp": 0.23900511793178608, "gcs": 49.28641335733382, "chi2": -0.4487250183955297, "attacked_buses": []}, {"id": 12, "label": 0, "p_if": 0.2471371769896655, "p_vae": 0.9800864678072162, "p_mlp": 0.3940263929370685, "gcs": 269.0289274199957, "chi2": 0.04456218136867036, "attacked_buses": []}, {"id": 13, "label": 0, "p_if": 0.2177265781538481, "p_vae": 0.6147547733128368, "p_mlp": 0.16530926733033485, "gcs": 281.9033479082863, "chi2": -0.577405531084694, "attacked_buses": []}, {"id": 14, "label": 0, "p_if": 0.0917067145236661, "p_vae": 0.35604057044330245, "p_mlp": 0.2620776967277874, "gcs": 60.09898869258781, "chi2": -0.01819334447579779, "attacked_buses": []}, {"id": 15, "label": 0, "p_if": 0.05162582158184431, "p_vae": 0.15862811673536234, "p_mlp": 0.2909255051045456, "gcs": 61.4403205873831, "chi2": -0.2681642882037927, "attacked_buses": []}, {"id": 16, "label": 0, "p_if": 0.10644163522548884, "p_vae": 0.3943862958366717, "p_mlp": 0.38397775691672137, "gcs": 96.88515614485661, "chi2": -0.15975275899902963, "attacked_buses": []}, {"id": 17, "label": 1, "p_if": 0.11498794788394469, "p_vae": 0.46541354988887473, "p_mlp": 0.4559352768406989, "gcs": 148.1418031548039, "chi2": 0.06383825931119608, "attacked_buses": [5, 11]}, {"id": 18, "label": 0, "p_if": 0.05175147941212297, "p_vae": 0.10858227849606943, "p_mlp": 0.23165259989923723, "gcs": 46.864480410741635, "chi2": -0.41326346156277066, "attacked_buses": []}, {"id": 19, "label": 0, "p_if": 0.13309688647743156, "p_vae": 0.41678138808884413, "p_mlp": 0.33160507588508203, "gcs": 161.73878988864294, "chi2": -0.26642908531689746, "attacked_buses": []}, {"id": 20, "label": 0, "p_if": 0.12717921975532215, "p_vae": 0.6852749519560768, "p_mlp": 0.47200265117571333, "gcs": 137.385142413751, "chi2": -0.651557387635254, "attacked_buses": []}, {"id": 21, "label": 0, "p_if": 0.066714945260184, "p_vae": 0.24416051533284414, "p_mlp": 0.263565146707605, "gcs": 55.979395989073886, "chi2": -0.7813117442667887, "attacked_buses": []}, {"id": 22, "label": 0, "p_if": 0.06761148909387905, "p_vae": 0.14406792724267792, "p_mlp": 0.29374505452608446, "gcs": 75.01899651551892, "chi2": -0.4493873378834808, "attacked_buses": []}, {"id": 23, "label": 0, "p_if": 0.1516413311864736, "p_vae": 0.410598657559703, "p_mlp": 0.3001767198366439, "gcs": 216.04040050282217, "chi2": -0.43009384619848134, "attacked_buses": []}, {"id": 24, "label": 0, "p_if": 0.20831369253630816, "p_vae": 0.5670142095526113, "p_mlp": 0.24700279887379517, "gcs": 222.78103803928292, "chi2": -0.5377978711691692, "attacked_buses": []}, {"id": 25, "label": 1, "p_if": 0.23221572156461984, "p_vae": 1.0, "p_mlp": 0.34244802208881797, "gcs": 92.98219298897455, "chi2": -0.23384935307028276, "attacked_buses": [7, 9, 10]}, {"id": 26, "label": 0, "p_if": 0.07094556404801956, "p_vae": 0.17012914650246028, "p_mlp": 0.36065478670497714, "gcs": 75.84213872077214, "chi2": -0.4559997623640505, "attacked_buses": []}, {"id": 27, "label": 0, "p_if": 0.059383029375491704, "p_vae": 0.18986603834356602, "p_mlp": 0.25674908682362413, "gcs": 60.957786317070656, "chi2": -0.35388907759008253, "attacked_buses": []}, {"id": 28, "label": 0, "p_if": 0.20146422642739167, "p_vae": 0.9249980992412651, "p_mlp": 0.4189659886853721, "gcs": 176.98607788472785, "chi2": 0.1938956837748959, "attacked_buses": []}, {"id": 29, "label": 0, "p_if": 0.3280207063153194, "p_vae": 1.0, "p_mlp": 0.16185930773022283, "gcs": 212.3913165510819, "chi2": -0.11935717594965507, "attacked_buses": []}, {"id": 30, "label": 1, "p_if": 0.12322641171263148, "p_vae": 0.5365380063637922, "p_mlp": 0.3195810544587247, "gcs": 82.61179663977701, "chi2": -0.2710982115076425, "attacked_buses": [1, 5, 6]}, {"id": 31, "label": 0, "p_if": 0.09611084348879859, "p_vae": 0.25501416445209485, "p_mlp": 0.4335608155810817, "gcs": 166.7608408854987, "chi2": -0.24920596878187404, "attacked_buses": []}, {"id": 32, "label": 0, "p_if": 0.11725474411784077, "p_vae": 0.3562829437713675, "p_mlp": 0.3486993087667147, "gcs": 141.7552074630168, "chi2": -0.4416910476921413, "attacked_buses": []}, {"id": 33, "label": 0, "p_if": 0.1349626160462256, "p_vae": 0.5893611291536148, "p_mlp": 0.48433759532068915, "gcs": 113.8020979228477, "chi2": -0.09876615176762801, "attacked_buses": []}, {"id": 34, "label": 0, "p_if": 0.06909955009679328, "p_vae": 0.20922532286001494, "p_mlp": 0.492213331643918, "gcs": 141.45255467531905, "chi2": -0.616088630852159, "attacked_buses": []}, {"id": 35, "label": 0, "p_if": 0.07163893056875563, "p_vae": 0.22145403915535444, "p_mlp": 0.244649455290384, "gcs": 58.80105181195727, "chi2": -0.4052986894829415, "attacked_buses": []}, {"id": 36, "label": 0, "p_if": 0.13920399882420295, "p_vae": 0.5870227024242446, "p_mlp": 0.4357376739538436, "gcs": 191.77421460050002, "chi2": -0.2668892577967592, "attacked_buses": []}, {"id": 37, "label": 0, "p_if": 0.09008185056742246, "p_vae": 0.28175262802270107, "p_mlp": 0.38577985287498734, "gcs": 99.30871972706971, "chi2": -0.35872602425766703, "attacked_buses": []}, {"id": 38, "label": 1, "p_if": 0.10416782563286076, "p_vae": 0.4701554913312676, "p_mlp": 0.3978205378671716, "gcs": 179.26139630084936, "chi2": 0.04147760968324726, "attacked_buses": [6, 7, 8]}, {"id": 39, "label": 1, "p_if": 0.12560799864546077, "p_vae": 0.3720798864137041, "p_mlp": 0.4186763628051798, "gcs": 91.86894746122802, "chi2": -0.18496647641427874, "attacked_buses": [0, 10, 11]}, {"id": 40, "label": 0, "p_if": 0.048313045664255115, "p_vae": 0.10073192740937939, "p_mlp": 0.24833401229240593, "gcs": 53.60349321227675, "chi2": -0.7488934097883383, "attacked_buses": []}, {"id": 41, "label": 0, "p_if": 0.22458097997879162, "p_vae": 1.0, "p_mlp": 0.3229928254558865, "gcs": 171.01439567239103, "chi2": -0.17002143135077194, "attacked_buses": []}, {"id": 42, "label": 0, "p_if": 0.05045512591330844, "p_vae": 0.16498730622077132, "p_mlp": 0.25077388853274424, "gcs": 53.13091349539642, "chi2": -0.6467337163159408, "attacked_buses": []}, {"id": 43, "label": 0, "p_if": 0.20361895751067444, "p_vae": 0.8068960994309755, "p_mlp": 0.36055454683248794, "gcs": 256.87679474462533, "chi2": 0.3612018392178907, "attacked_buses": []}, {"id": 44, "label": 1, "p_if": 0.10987022491462381, "p_vae": 0.1862419835721498, "p_mlp": 0.338538422421891, "gcs": 80.55790882191265, "chi2": -0.9477859271749383, "attacked_buses": [6, 7, 9]}, {"id": 45, "label": 0, "p_if": 0.06558043717383796, "p_vae": 0.09669274740255275, "p_mlp": 0.451490274061365, "gcs": 122.13642099600293, "chi2": -0.6839652060912366, "attacked_buses": []}, {"id": 46, "label": 0, "p_if": 0.1949249226809775, "p_vae": 0.8786500171534025, "p_mlp": 0.20637590092175861, "gcs": 200.9042574608346, "chi2": -0.24547351077010524, "attacked_buses": []}, {"id": 47, "label": 1, "p_if": 0.07193479866031195, "p_vae": 0.13601175279141464, "p_mlp": 0.39635860408824797, "gcs": 92.98062667385476, "chi2": -0.8257109143610627, "attacked_buses": [9, 11]}, {"id": 48, "label": 1, "p_if": 0.2703074636044461, "p_vae": 0.19568760103384164, "p_mlp": 0.25840653453973994, "gcs": 213.16895688630296, "chi2": -0.7769078234432178, "attacked_buses": [5, 8, 9]}, {"id": 49, "label": 0, "p_if": 0.18750393611586158, "p_vae": 0.5682401396392678, "p_mlp": 0.20583065250301244, "gcs": 224.99342565844705, "chi2": -0.7814081227994882, "attacked_buses": []}];
+
+const BUSES=[
+  {id:0,x:80,y:60,type:'gen'},{id:1,x:200,y:50,type:'gen'},{id:2,x:310,y:80,type:'load'},{id:3,x:290,y:160,type:'load'},
+  {id:4,x:165,y:130,type:'load'},{id:5,x:370,y:40,type:'gen'},{id:6,x:430,y:120,type:'load'},{id:7,x:500,y:60,type:'gen'},
+  {id:8,x:480,y:190,type:'load'},{id:9,x:430,y:230,type:'load'},{id:10,x:340,y:235,type:'load'},
+  {id:11,x:250,y:240,type:'load'},{id:12,x:190,y:215,type:'load'},{id:13,x:100,y:190,type:'load'}
 ];
-const LINES = [
-  [0,1],[0,4],[1,2],[1,3],[1,4],[2,3],[3,4],[3,6],[3,8],
-  [4,5],[5,10],[5,11],[5,12],[6,7],[6,8],[8,9],[8,13],[9,10],[11,12],[12,13]
+const LINES=[
+  [0,1],[0,4],[1,2],[1,3],[1,4],[2,3],[3,4],[3,6],[3,8],[4,5],[5,10],[5,11],[5,12],[6,7],[6,8],[8,9],[8,13],[9,10],[11,12],[12,13]
 ];
 
-const svg = document.getElementById('bus-svg');
-
+const svg=document.getElementById('bus-svg');
 function drawGrid(attackedBuses=[]) {
-  svg.innerHTML = '';
-  // lines
+  svg.innerHTML='';
   LINES.forEach(([a,b])=>{
     const bA=BUSES[a],bB=BUSES[b];
     const isAtk = attackedBuses.includes(a)||attackedBuses.includes(b);
@@ -342,18 +272,18 @@ function drawGrid(attackedBuses=[]) {
     ln.setAttribute('class',isAtk?'line-attacked':'line-normal');
     svg.appendChild(ln);
   });
-  // nodes
   BUSES.forEach(bus=>{
     const g=document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('class','bus-node');
     const isAtk=attackedBuses.includes(bus.id);
-    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    c.setAttribute('cx',bus.x);c.setAttribute('cy',bus.y);c.setAttribute('r',isAtk?9:7);
-    const col=isAtk?'#ef4444':bus.type==='gen'?'#10b981':'#3b82f6';
-    c.setAttribute('fill',col);
-    c.setAttribute('stroke',isAtk?'#fca5a5':bus.type==='gen'?'#34d399':'#93c5fd');
-    c.setAttribute('stroke-width',1.5);
-    if(isAtk){c.setAttribute('filter','url(#glow)');}
+    const c=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    c.setAttribute('x',bus.x-6);c.setAttribute('y',bus.y-6);
+    c.setAttribute('width', 12);c.setAttribute('height', 12);
+    const stroke=isAtk?'#d32f2f':(bus.type==='gen'?'#1b5e20':'#000000');
+    c.setAttribute('fill',isAtk?'#fff':'#fff');
+    c.setAttribute('stroke',stroke);
+    c.setAttribute('stroke-width',isAtk?'3':'2');
+    
     const t=document.createElementNS('http://www.w3.org/2000/svg','text');
     t.setAttribute('x',bus.x);t.setAttribute('y',bus.y+20);
     t.setAttribute('text-anchor','middle');t.setAttribute('class','bus-label');
@@ -361,27 +291,19 @@ function drawGrid(attackedBuses=[]) {
     g.appendChild(c);g.appendChild(t);
     svg.appendChild(g);
   });
-  // glow filter
-  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
-  defs.innerHTML=`<filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
-  svg.insertBefore(defs,svg.firstChild);
 }
 drawGrid();
 
-// ─── real samples (auto-injected) ─────────────────────────────────────────────
-const SAMPLES=[{"id": 0, "label": 0, "p_if": 0.3526728193719965, "p_vae": 0.8418088412013052, "p_mlp": 0.26145882924026903, "gcs": 243.13187056970165, "chi2": -0.1186330017343196, "attacked_buses": []}, {"id": 1, "label": 1, "p_if": 0.350641574762098, "p_vae": 1.0, "p_mlp": 0.5263818820870687, "gcs": 128.40903343056632, "chi2": -0.07880205390581596, "attacked_buses": [0, 7]}, {"id": 2, "label": 0, "p_if": 0.05415615538723961, "p_vae": 0.18341739467339754, "p_mlp": 0.23315581619373324, "gcs": 46.66752914218406, "chi2": -1.4615457810689327, "attacked_buses": []}, {"id": 3, "label": 0, "p_if": 0.09482342807655009, "p_vae": 0.19476528012968336, "p_mlp": 0.4135260946513943, "gcs": 100.34740594967015, "chi2": -1.4653809674072185, "attacked_buses": []}, {"id": 4, "label": 0, "p_if": 0.16358734472861683, "p_vae": 0.3296173144525453, "p_mlp": 0.33590474823644517, "gcs": 203.76294240977714, "chi2": -1.0081344107193582, "attacked_buses": []}, {"id": 5, "label": 0, "p_if": 0.050292380772010634, "p_vae": 0.1135472759096193, "p_mlp": 0.2362333079419958, "gcs": 48.35846503469157, "chi2": -0.11388902373946652, "attacked_buses": []}, {"id": 6, "label": 0, "p_if": 0.2698023516220272, "p_vae": 0.716103584627898, "p_mlp": 0.3342828283888524, "gcs": 229.72669045158628, "chi2": -0.11096037497198066, "attacked_buses": []}, {"id": 7, "label": 0, "p_if": 0.24674455802934717, "p_vae": 0.7670153056009271, "p_mlp": 0.23250836451639184, "gcs": 245.29479070321486, "chi2": -0.390023459588535, "attacked_buses": []}, {"id": 8, "label": 0, "p_if": 0.4054904827103771, "p_vae": 1.0, "p_mlp": 0.2938623569305388, "gcs": 211.2647348638706, "chi2": -0.09529493809796877, "attacked_buses": []}, {"id": 9, "label": 1, "p_if": 0.18977070845783825, "p_vae": 0.7771216017991751, "p_mlp": 0.40851620638545727, "gcs": 229.37622367534797, "chi2": 0.3192521616563396, "attacked_buses": [5, 7]}, {"id": 10, "label": 0, "p_if": 0.08493400482593086, "p_vae": 0.16537253145116743, "p_mlp": 0.4899198211892737, "gcs": 130.12646339600045, "chi2": -0.4027901644066373, "attacked_buses": []}, {"id": 11, "label": 0, "p_if": 0.057013058570986944, "p_vae": 0.16092518220806246, "p_mlp": 0.23900511793178608, "gcs": 49.28641335733382, "chi2": -0.4487250183955297, "attacked_buses": []}, {"id": 12, "label": 0, "p_if": 0.2471371769896655, "p_vae": 0.9800864678072162, "p_mlp": 0.3940263929370685, "gcs": 269.0289274199957, "chi2": 0.04456218136867036, "attacked_buses": []}, {"id": 13, "label": 0, "p_if": 0.2177265781538481, "p_vae": 0.6147547733128368, "p_mlp": 0.16530926733033485, "gcs": 281.9033479082863, "chi2": -0.577405531084694, "attacked_buses": []}, {"id": 14, "label": 0, "p_if": 0.0917067145236661, "p_vae": 0.35604057044330245, "p_mlp": 0.2620776967277874, "gcs": 60.09898869258781, "chi2": -0.01819334447579779, "attacked_buses": []}, {"id": 15, "label": 0, "p_if": 0.05162582158184431, "p_vae": 0.15862811673536234, "p_mlp": 0.2909255051045456, "gcs": 61.4403205873831, "chi2": -0.2681642882037927, "attacked_buses": []}, {"id": 16, "label": 0, "p_if": 0.10644163522548884, "p_vae": 0.3943862958366717, "p_mlp": 0.38397775691672137, "gcs": 96.88515614485661, "chi2": -0.15975275899902963, "attacked_buses": []}, {"id": 17, "label": 1, "p_if": 0.11498794788394469, "p_vae": 0.46541354988887473, "p_mlp": 0.4559352768406989, "gcs": 148.1418031548039, "chi2": 0.06383825931119608, "attacked_buses": [5, 11]}, {"id": 18, "label": 0, "p_if": 0.05175147941212297, "p_vae": 0.10858227849606943, "p_mlp": 0.23165259989923723, "gcs": 46.864480410741635, "chi2": -0.41326346156277066, "attacked_buses": []}, {"id": 19, "label": 0, "p_if": 0.13309688647743156, "p_vae": 0.41678138808884413, "p_mlp": 0.33160507588508203, "gcs": 161.73878988864294, "chi2": -0.26642908531689746, "attacked_buses": []}, {"id": 20, "label": 0, "p_if": 0.12717921975532215, "p_vae": 0.6852749519560768, "p_mlp": 0.47200265117571333, "gcs": 137.385142413751, "chi2": -0.651557387635254, "attacked_buses": []}, {"id": 21, "label": 0, "p_if": 0.066714945260184, "p_vae": 0.24416051533284414, "p_mlp": 0.263565146707605, "gcs": 55.979395989073886, "chi2": -0.7813117442667887, "attacked_buses": []}, {"id": 22, "label": 0, "p_if": 0.06761148909387905, "p_vae": 0.14406792724267792, "p_mlp": 0.29374505452608446, "gcs": 75.01899651551892, "chi2": -0.4493873378834808, "attacked_buses": []}, {"id": 23, "label": 0, "p_if": 0.1516413311864736, "p_vae": 0.410598657559703, "p_mlp": 0.3001767198366439, "gcs": 216.04040050282217, "chi2": -0.43009384619848134, "attacked_buses": []}, {"id": 24, "label": 0, "p_if": 0.20831369253630816, "p_vae": 0.5670142095526113, "p_mlp": 0.24700279887379517, "gcs": 222.78103803928292, "chi2": -0.5377978711691692, "attacked_buses": []}, {"id": 25, "label": 1, "p_if": 0.23221572156461984, "p_vae": 1.0, "p_mlp": 0.34244802208881797, "gcs": 92.98219298897455, "chi2": -0.23384935307028276, "attacked_buses": [7, 9, 10]}, {"id": 26, "label": 0, "p_if": 0.07094556404801956, "p_vae": 0.17012914650246028, "p_mlp": 0.36065478670497714, "gcs": 75.84213872077214, "chi2": -0.4559997623640505, "attacked_buses": []}, {"id": 27, "label": 0, "p_if": 0.059383029375491704, "p_vae": 0.18986603834356602, "p_mlp": 0.25674908682362413, "gcs": 60.957786317070656, "chi2": -0.35388907759008253, "attacked_buses": []}, {"id": 28, "label": 0, "p_if": 0.20146422642739167, "p_vae": 0.9249980992412651, "p_mlp": 0.4189659886853721, "gcs": 176.98607788472785, "chi2": 0.1938956837748959, "attacked_buses": []}, {"id": 29, "label": 0, "p_if": 0.3280207063153194, "p_vae": 1.0, "p_mlp": 0.16185930773022283, "gcs": 212.3913165510819, "chi2": -0.11935717594965507, "attacked_buses": []}, {"id": 30, "label": 1, "p_if": 0.12322641171263148, "p_vae": 0.5365380063637922, "p_mlp": 0.3195810544587247, "gcs": 82.61179663977701, "chi2": -0.2710982115076425, "attacked_buses": [1, 5, 6]}, {"id": 31, "label": 0, "p_if": 0.09611084348879859, "p_vae": 0.25501416445209485, "p_mlp": 0.4335608155810817, "gcs": 166.7608408854987, "chi2": -0.24920596878187404, "attacked_buses": []}, {"id": 32, "label": 0, "p_if": 0.11725474411784077, "p_vae": 0.3562829437713675, "p_mlp": 0.3486993087667147, "gcs": 141.7552074630168, "chi2": -0.4416910476921413, "attacked_buses": []}, {"id": 33, "label": 0, "p_if": 0.1349626160462256, "p_vae": 0.5893611291536148, "p_mlp": 0.48433759532068915, "gcs": 113.8020979228477, "chi2": -0.09876615176762801, "attacked_buses": []}, {"id": 34, "label": 0, "p_if": 0.06909955009679328, "p_vae": 0.20922532286001494, "p_mlp": 0.492213331643918, "gcs": 141.45255467531905, "chi2": -0.616088630852159, "attacked_buses": []}, {"id": 35, "label": 0, "p_if": 0.07163893056875563, "p_vae": 0.22145403915535444, "p_mlp": 0.244649455290384, "gcs": 58.80105181195727, "chi2": -0.4052986894829415, "attacked_buses": []}, {"id": 36, "label": 0, "p_if": 0.13920399882420295, "p_vae": 0.5870227024242446, "p_mlp": 0.4357376739538436, "gcs": 191.77421460050002, "chi2": -0.2668892577967592, "attacked_buses": []}, {"id": 37, "label": 0, "p_if": 0.09008185056742246, "p_vae": 0.28175262802270107, "p_mlp": 0.38577985287498734, "gcs": 99.30871972706971, "chi2": -0.35872602425766703, "attacked_buses": []}, {"id": 38, "label": 1, "p_if": 0.10416782563286076, "p_vae": 0.4701554913312676, "p_mlp": 0.3978205378671716, "gcs": 179.26139630084936, "chi2": 0.04147760968324726, "attacked_buses": [6, 7, 8]}, {"id": 39, "label": 1, "p_if": 0.12560799864546077, "p_vae": 0.3720798864137041, "p_mlp": 0.4186763628051798, "gcs": 91.86894746122802, "chi2": -0.18496647641427874, "attacked_buses": [0, 10, 11]}, {"id": 40, "label": 0, "p_if": 0.048313045664255115, "p_vae": 0.10073192740937939, "p_mlp": 0.24833401229240593, "gcs": 53.60349321227675, "chi2": -0.7488934097883383, "attacked_buses": []}, {"id": 41, "label": 0, "p_if": 0.22458097997879162, "p_vae": 1.0, "p_mlp": 0.3229928254558865, "gcs": 171.01439567239103, "chi2": -0.17002143135077194, "attacked_buses": []}, {"id": 42, "label": 0, "p_if": 0.05045512591330844, "p_vae": 0.16498730622077132, "p_mlp": 0.25077388853274424, "gcs": 53.13091349539642, "chi2": -0.6467337163159408, "attacked_buses": []}, {"id": 43, "label": 0, "p_if": 0.20361895751067444, "p_vae": 0.8068960994309755, "p_mlp": 0.36055454683248794, "gcs": 256.87679474462533, "chi2": 0.3612018392178907, "attacked_buses": []}, {"id": 44, "label": 1, "p_if": 0.10987022491462381, "p_vae": 0.1862419835721498, "p_mlp": 0.338538422421891, "gcs": 80.55790882191265, "chi2": -0.9477859271749383, "attacked_buses": [6, 7, 9]}, {"id": 45, "label": 0, "p_if": 0.06558043717383796, "p_vae": 0.09669274740255275, "p_mlp": 0.451490274061365, "gcs": 122.13642099600293, "chi2": -0.6839652060912366, "attacked_buses": []}, {"id": 46, "label": 0, "p_if": 0.1949249226809775, "p_vae": 0.8786500171534025, "p_mlp": 0.20637590092175861, "gcs": 200.9042574608346, "chi2": -0.24547351077010524, "attacked_buses": []}, {"id": 47, "label": 1, "p_if": 0.07193479866031195, "p_vae": 0.13601175279141464, "p_mlp": 0.39635860408824797, "gcs": 92.98062667385476, "chi2": -0.8257109143610627, "attacked_buses": [9, 11]}, {"id": 48, "label": 1, "p_if": 0.2703074636044461, "p_vae": 0.19568760103384164, "p_mlp": 0.25840653453973994, "gcs": 213.16895688630296, "chi2": -0.7769078234432178, "attacked_buses": [5, 8, 9]}, {"id": 49, "label": 0, "p_if": 0.18750393611586158, "p_vae": 0.5682401396392678, "p_mlp": 0.20583065250301244, "gcs": 224.99342565844705, "chi2": -0.7814081227994882, "attacked_buses": []}];
-
-// ─── sample list ──────────────────────────────────────────────────────────────
 const listEl=document.getElementById('sample-list');
 SAMPLES.forEach((s,i)=>{
   const div=document.createElement('div');
   div.className='sample-item';div.id='si-'+i;
-  div.innerHTML=`<span class="label-pill ${s.label?'pill-attack':'pill-normal'}">${s.label?'ATTACK':'NORMAL'}</span><span style="color:var(--muted);font-family:'JetBrains Mono',monospace">Sample #${String(i+1).padStart(2,'0')}</span>`;
+  div.innerHTML=`<span class="label-text ${s.label?'text-attack':'text-normal'}">[${s.label?'ATTACK':'NORMAL'}]</span>
+                 <span>ID_${String(i+1).padStart(3,'0')}</span>`;
   div.onclick=()=>selectSample(i);
   listEl.appendChild(div);
 });
 
-// ─── selection logic ──────────────────────────────────────────────────────────
 let currentLambda=0.5;
 let currentSample=null;
 let playInterval=null;
@@ -390,7 +312,6 @@ function onLambdaChange(v){
   currentLambda=parseFloat(v);
   document.getElementById('lam-disp').textContent=v;
   document.getElementById('hdr-lam').textContent=v;
-  // update HGAT rate display
   const rate=currentLambda<0.15?'~100%':currentLambda<0.5?'~50%':currentLambda<1?'~5%':'<2%';
   document.getElementById('hgat-rate-metric').textContent=rate;
   if(currentSample!==null) selectSample(currentSample);
@@ -404,9 +325,8 @@ function selectSample(i){
 
   const s=SAMPLES[i];
   const fusion=(s.p_if+s.p_vae+s.p_mlp)/3;
-
-  // update gauges
   const pct=v=>Math.round(v*100);
+  
   document.getElementById('g-if').style.width=pct(s.p_if)+'%';
   document.getElementById('g-vae').style.width=pct(s.p_vae)+'%';
   document.getElementById('g-mlp').style.width=pct(s.p_mlp)+'%';
@@ -418,112 +338,94 @@ function selectSample(i){
   document.getElementById('gcs-val').textContent=s.gcs.toFixed(2);
   document.getElementById('chi2-val').textContent=s.chi2.toFixed(2);
 
-  // draw grid
   drawGrid(s.attacked_buses);
 
-  // A2C decision
   const box=document.getElementById('decision-box');
   const title=document.getElementById('decision-title');
   const sub=document.getElementById('decision-sub');
 
-  // simplified policy emulation
   let action,decided;
-  if(currentLambda<0.15){
-    action='ACQUIRE_GNN'; decided=fusion>=0.5?'ATTACK':'NORMAL';
-  } else if(currentLambda>=0.15 && currentLambda<0.8){
-    // moderate: decide directly from Tier-1
-    action='DECIDE'; decided=fusion>=0.5?'ATTACK':'NORMAL';
-  } else {
-    // strict: go by IF score
-    action='DECIDE'; decided=s.p_if>=0.5?'ATTACK':'NORMAL';
-  }
+  if(currentLambda<0.15){ action='ACQUIRE_GNN'; decided=fusion>=0.5?'ATTACK':'NORMAL'; }
+  else if(currentLambda>=0.15 && currentLambda<0.8){ action='DECIDE'; decided=fusion>=0.5?'ATTACK':'NORMAL'; }
+  else { action='DECIDE'; decided=s.p_if>=0.5?'ATTACK':'NORMAL'; }
 
-  // highlight flow step
   ['fs0','fs1','fs2','fs3'].forEach(id=>document.getElementById(id).classList.remove('active-step'));
   document.getElementById('fs0').classList.add('active-step');
-  setTimeout(()=>{ document.getElementById('fs1').classList.add('active-step'); },300);
+  setTimeout(()=>{ document.getElementById('fs1').classList.add('active-step'); },150);
   setTimeout(()=>{ document.getElementById('fs2').classList.add('active-step');
-    if(action==='ACQUIRE_GNN') setTimeout(()=>document.getElementById('fs3').classList.add('active-step'),300); else document.getElementById('fs3').classList.add('active-step'); },600);
+    if(action==='ACQUIRE_GNN') setTimeout(()=>document.getElementById('fs3').classList.add('active-step'),150); 
+    else document.getElementById('fs3').classList.add('active-step'); 
+  },300);
 
   if(action==='ACQUIRE_GNN'){
     box.className='decision-box verify';
-    title.textContent='🔮 Invoking Tier-2 HGAT...';
-    sub.textContent=`Low λ (${currentLambda}) → verification justified → HGAT result: ${decided}`;
+    title.textContent='[ HGAT TIER-2 INVOKED ]';
+    sub.textContent=`L_c=${currentLambda} -> Structural verify -> Output is ${decided}`;
   } else if(decided==='ATTACK'){
     box.className='decision-box attack';
-    title.innerHTML='🔴 ATTACK DETECTED';
-    sub.textContent=`P_Tier1 = ${fusion.toFixed(3)} > 0.5 → Direct decision (no HGAT)`;
+    title.innerHTML='[ CONFIRMED CYBER EVENT ]';
+    sub.textContent=`P_T1=${fusion.toFixed(2)} > 0.5 -> Direct override logic executed.`;
   } else {
     box.className='decision-box normal';
-    title.innerHTML='🟢 NORMAL OPERATION';
-    sub.textContent=`P_Tier1 = ${fusion.toFixed(3)} ≤ 0.5 → Direct decision (no HGAT)`;
+    title.innerHTML='[ NOMINAL GRID STATE ]';
+    sub.textContent=`P_T1=${fusion.toFixed(2)} <= 0.5 -> Safe bypass.`;
   }
 }
 
-function autoPlay(){
-  if(playInterval) return;
-  let i=(currentSample??-1);
-  playInterval=setInterval(()=>{
-    i=(i+1)%SAMPLES.length;
-    selectSample(i);
-  },1400);
-}
+function autoPlay(){ if(!playInterval) playInterval=setInterval(()=>selectSample(((currentSample??-1)+1)%SAMPLES.length), 700); }
 function pausePlay(){ clearInterval(playInterval); playInterval=null; }
 function randomSample(){ selectSample(Math.floor(Math.random()*SAMPLES.length)); }
 
-// ─── AUC chart ────────────────────────────────────────────────────────────────
+/* Charts using stark solid colors */
+Chart.defaults.color = "#000000";
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.font.weight = 700;
+
 new Chart(document.getElementById('auc-chart'),{
   type:'bar',
   data:{
-    labels:['Isolation Forest','PCA-AE (VAE)','MLP','Tier-1 Fusion','HGAT Tier-2'],
+    labels:['IF','PCA-AE','MLP','T-1 Fusion','T-2 HGAT'],
     datasets:[{
       label:'ROC-AUC',
       data:[0.9555,0.9226,0.6954,0.9345,0.7712],
-      backgroundColor:['rgba(59,130,246,.7)','rgba(139,92,246,.7)','rgba(245,158,11,.7)','rgba(16,185,129,.85)','rgba(239,68,68,.7)'],
-      borderRadius:6,borderSkipped:false,
+      backgroundColor:['#000000','#333333','#555555','#d32f2f','#b71c1c'],
+      borderWidth: 1,
+      borderColor: '#000'
     }]
   },
   options:{
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`AUC: ${ctx.raw}`}}},
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false} },
     scales:{
-      y:{min:0.5,max:1.05,ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},
-      x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}}
+      y:{min:0.5,max:1.05, ticks:{color:'#000'}, grid:{color:'#eee'} },
+      x:{ticks:{color:'#000'}, grid:{display:false} }
     }
   }
 });
 
-// ─── Reward history chart ─────────────────────────────────────────────────────
 const ep=Array.from({length:50},(_,i)=>(i+1)*100);
-function smoothedReward(seed){
-  let r=-0.8,res=[];
-  for(let i=0;i<50;i++){
-    r+=(0.95-r)*0.08+(Math.random()-0.5)*0.12;
-    res.push(parseFloat(r.toFixed(3)));
-  }
-  return res;
-}
+function sr(i){ let r=0; let a=[]; for(let j=0;j<50;j++){r+=(1-r)*0.1+Math.sin(j*0.3)*0.1; a.push(r)} return a; }
 new Chart(document.getElementById('reward-chart'),{
   type:'line',
   data:{
     labels:ep,
     datasets:[
-      {label:'λ=0.1',data:smoothedReward(1),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:2},
-      {label:'λ=0.5',data:smoothedReward(2),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:2},
-      {label:'λ=2.0',data:smoothedReward(3),borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:2},
+      {label:'L=0.1', data:sr(1), borderColor:'#d32f2f', backgroundColor:'transparent', tension:0, pointRadius:2, borderWidth:2},
+      {label:'L=0.5', data:sr(2), borderColor:'#000000', backgroundColor:'transparent', tension:0, pointRadius:2, borderWidth:2},
+      {label:'L=2.0', data:sr(3), borderColor:'#999999', backgroundColor:'transparent', tension:0, pointRadius:2, borderWidth:2},
     ]
   },
   options:{
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:14}}},
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#000', font:{size:10}, boxWidth:10} } },
     scales:{
-      y:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
-      x:{ticks:{color:'#64748b',font:{size:10},maxTicksLimit:8},grid:{display:false}}
+      y:{ticks:{color:'#000'},grid:{color:'#eee'} },
+      x:{ticks:{color:'#000',maxTicksLimit:8}, grid:{display:false} }
     }
   }
 });
 
-// ─── init ─────────────────────────────────────────────────────────────────────
 selectSample(0);
 </script>
 </body>

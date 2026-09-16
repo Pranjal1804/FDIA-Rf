@@ -66,21 +66,18 @@ This project has been implemented fully end-to-end to run identically on any mac
 ### 6.1 Executing the Core Simulation
 
 ```bash
-# 1. Activate the environment (Ensure the dependencies from requirements.txt are installed)
-source ~/myenv/bin/activate
-
-# 2. Navigate to the project
+# 1. Navigate to the project
 cd ~/Desktop/fdia
 
-# 3. Generate the Real Diurnal Smart Grid Dataset
-PYTHONPATH=. python src/simulation/generate_data.py
+# 2. Generate the Real Diurnal Smart Grid Dataset
+PYTHONPATH=. ~/myenv/bin/python src/simulation/generate_data.py
 
-# 4. Train Tier-1 Models
-PYTHONPATH=. python src/tier1/train_tier1_numpy.py
+# 3. Train Tier-1 Models
+PYTHONPATH=. ~/myenv/bin/python src/tier1/train_tier1_numpy.py
 
-# 5. Run the Full Integration Pipeline (Trains HGAT & RL Agent + Computes Results)
+# 4. Run the Full Integration Pipeline (Trains HGAT & RL Agent + Computes Results)
 # This will also automatically update the demo dashboard with the REAL inferences!
-PYTHONPATH=. python src/full_pipeline.py
+PYTHONPATH=. ~/myenv/bin/python src/full_pipeline.py
 ```
 
 ### 6.2 Viewing the Live Web Dashboard
