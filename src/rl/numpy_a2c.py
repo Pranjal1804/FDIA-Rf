@@ -37,20 +37,37 @@ class NumpyA2C:
         v = h @ self.Wc2 + self.bc2
         return v, h
 
-    def select_action(self, s):
+    def select_action(self, s, action_mask=None, deterministic=False):
         probs, _ = self.forward_actor(s)
-        return np.random.choice(len(probs), p=probs)
+        probs = np.asarray(probs, dtype=float).reshape(-1)
+        if action_mask is not None:
+            mask = np.asarray(action_mask, dtype=bool).reshape(-1)
+            if len(mask) != len(probs) or not np.any(mask):
+                raise ValueError("action_mask must match the action dimension and allow one action")
+            probs = np.where(mask, probs, 0.0)
+            probs /= probs.sum()
+        if deterministic:
+            return int(np.argmax(probs))
+        return int(np.random.choice(len(probs), p=probs))
 
-    def update(self, states, actions, returns):
+    def update(self, states, actions, returns, action_masks=None):
         S = np.array(states)
         A = np.array(actions)
         G = np.array(returns).reshape(-1, 1)
 
         probs, ha = self.forward_actor(S)
+        if action_masks is not None:
+            masks = np.asarray(action_masks, dtype=bool)
+            if masks.shape != probs.shape or not np.all(masks.any(axis=1)):
+                raise ValueError("action_masks must match policy probabilities and allow one action per state")
+            probs = np.where(masks, probs, 0.0)
+            probs /= probs.sum(axis=1, keepdims=True)
         V, hc = self.forward_critic(S)
 
-        # Advantage A_t = G_t - V(s_t)
+        # Advantage A_t = G_t - V(s_t). Normalize actor advantages to
+        # prevent a few high-magnitude episodes from collapsing the policy.
         adv = G - V
+        actor_adv = (adv - adv.mean()) / (adv.std() + 1e-8)
 
         # Critic Gradients (MSE)
         d_V = -2 * adv / len(S)
@@ -61,7 +78,7 @@ class NumpyA2C:
         # Actor Gradients (Policy Gradient: dlog(pi) * A)
         d_logits = probs.copy()
         d_logits[np.arange(len(S)), A] -= 1
-        d_logits = d_logits * adv / len(S)
+        d_logits = d_logits * actor_adv / len(S)
         dWa2 = ha.T @ d_logits; dba2 = d_logits.sum(0)
         dha = d_logits @ self.Wa2.T * self._drelu(ha)
         dWa1 = S.T @ dha; dba1 = dha.sum(0)

@@ -25,7 +25,8 @@ class FDIAEnv(gym.Env):
     metadata = {"render_modes": []}
 
     def __init__(self, dataset: list[dict], lambda_c: float = 0.5,
-                 cost_gnn: float = 1.0, hgat_stub: bool = True):
+                 cost_gnn: float = 1.0, hgat_stub: bool = True,
+                 hgat_threshold: float = 0.5):
         """
         dataset : list of dicts with keys 'p_tier1', 'gcs', 'chi2_std', 'label',
                   and optionally 'p_hgat'
@@ -38,11 +39,12 @@ class FDIAEnv(gym.Env):
         self.lambda_c = lambda_c
         self.cost_gnn = cost_gnn
         self.hgat_stub = hgat_stub
+        self.hgat_threshold = hgat_threshold
 
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(
-            low=np.array([0.0, 0.0, -10.0, 0.0], dtype=np.float32),
-            high=np.array([1.0, 100.0, 10.0, 1.0], dtype=np.float32),
+            low=np.array([0.0, -10.0, -10.0, 0.0], dtype=np.float32),
+            high=np.array([1.0, 10.0, 10.0, 1.0], dtype=np.float32),
             dtype=np.float32,
         )
 
@@ -61,13 +63,21 @@ class FDIAEnv(gym.Env):
         if "p_hgat" in self._sample and not self.hgat_stub:
             return float(self._sample["p_hgat"])
         # stub: add small Gaussian noise to P_Tier1, clipped to [0,1]
-        noise = np.random.normal(0, 0.05)
+        noise = self.np_random.normal(0, 0.05)
         return float(np.clip(self._sample["p_tier1"] + noise, 0.0, 1.0))
+
+    def action_mask(self) -> np.ndarray:
+        """Return the actions valid for the current episode state."""
+        if self._step_idx == 0:
+            return np.array([True, True, True, False], dtype=bool)
+        if self._hgat_called:
+            return np.array([True, True, False, True], dtype=bool)
+        return np.array([True, True, False, False], dtype=bool)
 
     # ── gym API ───────────────────────────────────────────────────────────────
     def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
-        self._sample = self.dataset[np.random.randint(len(self.dataset))]
+        self._sample = self.dataset[int(self.np_random.integers(len(self.dataset)))]
         self._step_idx = 0
         self._b_acq = 0
         self._hgat_called = False
@@ -84,6 +94,7 @@ class FDIAEnv(gym.Env):
             if self._step_idx > 0:
                 # penalise invalid re-acquisition
                 reward = -1.0
+                info["invalid_action"] = True
                 return self._get_obs(), reward, True, truncated, info
 
             self._b_acq = 1
@@ -96,8 +107,11 @@ class FDIAEnv(gym.Env):
 
         # ── Review (only valid at step 1 after AcquireGNN) ───────────────────
         if action == REVIEW:
+            if self._step_idx == 0 or not self._hgat_called:
+                info["invalid_action"] = True
+                return self._get_obs(), -1.0, True, truncated, info
             p_hgat = self._get_hgat_prob()
-            y_hat = int(p_hgat >= 0.5)
+            y_hat = int(p_hgat >= self.hgat_threshold)
             reward = compute_reward(y_true, DECIDE_ATTACK if y_hat else DECIDE_NORMAL,
                                     y_hat, self.lambda_c, 0.0)
             self._step_idx += 1
@@ -111,4 +125,5 @@ class FDIAEnv(gym.Env):
             return self._get_obs(), reward, True, truncated, info
 
         # fallback
+        info["invalid_action"] = True
         return self._get_obs(), -1.0, True, truncated, info

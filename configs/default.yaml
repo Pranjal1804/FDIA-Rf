@@ -1,4 +1,5 @@
 experiment_name: "fdia_selective_verification"
+seed: 42
 
 # Simulation / Environment
 simulation:
@@ -9,9 +10,11 @@ simulation:
 
 # RL / Cost parameters
 rl:
-  lambda_c: 0.5
+  lambda_c: 0.05
   episode_cap: 2
   learning_rate: 0.0003
+  hidden_dim: 64
+  episodes: 5000
 
 # Model hyperparameters
 tier1:
@@ -27,3 +30,4 @@ tier2:
   hgat:
     hidden_dim: 64
     heads: 4
+  epochs: 20
