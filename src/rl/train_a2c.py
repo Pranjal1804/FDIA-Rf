@@ -37,12 +37,13 @@ def main():
         
         for ep in range(episodes):
             s, _ = env.reset()
-            ep_states, ep_actions, ep_rewards = [], [], []
+            ep_states, ep_actions, ep_rewards, ep_masks = [], [], [], []
             done = False
             while not done:
-                a = agent.select_action(s)
+                action_mask = env.action_mask()
+                a = agent.select_action(s, action_mask=action_mask)
                 s_next, r, done, _, info = env.step(a)
-                ep_states.append(s)
+                ep_states.append(s); ep_masks.append(action_mask)
                 ep_actions.append(a)
                 ep_rewards.append(r)
                 s = s_next
@@ -56,7 +57,7 @@ def main():
                 G = r + G
                 returns.insert(0, G)
                 
-            agent.update(ep_states, ep_actions, returns)
+            agent.update(ep_states, ep_actions, returns, action_masks=ep_masks)
             rewards.append(sum(ep_rewards))
             
             if (ep + 1) % 1000 == 0:

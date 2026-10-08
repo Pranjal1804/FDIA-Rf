@@ -75,6 +75,24 @@ def test_env_step_b_acq_flag():
     assert obs[3] == 1.0
 
 
+def test_env_seeded_reset_is_deterministic():
+    ds = _make_dataset()
+    env = FDIAEnv(ds, lambda_c=0.5)
+    obs1, _ = env.reset(seed=7)
+    obs2, _ = env.reset(seed=7)
+    assert np.array_equal(obs1, obs2)
+
+
+def test_env_review_before_acquire_is_invalid():
+    ds = _make_dataset()
+    env = FDIAEnv(ds, lambda_c=0.5)
+    env.reset(seed=0)
+    _, reward, terminated, _, info = env.step(REVIEW)
+    assert terminated
+    assert reward == -1.0
+    assert info["invalid_action"]
+
+
 if __name__ == "__main__":
     test_reward_correct_classify()
     test_reward_wrong_classify()

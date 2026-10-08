@@ -86,6 +86,9 @@ class HGATModelNumpy:
     def fit(self, X, y, H, epochs=50, bs=32):
         y = y.reshape(-1, 1).astype(float)
         n = len(X)
+        positive_count = max(float(y.sum()), 1.0)
+        negative_count = max(float(n - y.sum()), 1.0)
+        positive_weight = negative_count / positive_count
         for ep in range(epochs):
             idx = np.random.permutation(n)
             for i in range(0, n, bs):
@@ -94,7 +97,8 @@ class HGATModelNumpy:
                 
                 out, h1, h2, h_pool = self.forward(xb, H)
                 
-                d_out = (out - yb) / len(b)
+                weights = np.where(yb == 1.0, positive_weight, 1.0)
+                d_out = (out - yb) * weights / len(b)
                 dfc = h_pool.T @ d_out
                 db = np.sum(d_out, axis=0)
                 
